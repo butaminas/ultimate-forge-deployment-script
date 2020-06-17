@@ -43,7 +43,7 @@ yarn prod
 # Switch (downtime for microseconds)
 mv ~/$domain ~/backup_"$domain"
 mv ~/deploy_"$domain" ~/$domain
-if [ -d ~/"$domain"_uploads ]; then
+if [ ! -d ~/"$domain"_uploads ]; then
    mkdir ~/"$domain"_uploads
 fi
 cd ~/$domain/public
