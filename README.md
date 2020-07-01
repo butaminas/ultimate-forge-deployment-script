@@ -55,11 +55,11 @@ git stash --include-untracked
 git pull origin release/testing
 git stash clear
 composer install --no-interaction --prefer-dist --optimize-autoloader
+yarn install
+yarn prod
 if [ -f artisan ]; then
    php artisan migrate --force
 fi
-yarn install
-yarn prod
 
 # Switch (downtime for microseconds)
 mv ~/$domain ~/backup_"$domain"
