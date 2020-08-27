@@ -59,6 +59,8 @@ yarn install
 yarn prod
 if [ -f artisan ]; then
    php artisan migrate --force
+   php artisan cache:clear
+   php artisan view:clear
 fi
 
 # Switch (downtime for microseconds)
@@ -80,6 +82,9 @@ sudo -S service php7.4-fpm reload
 echo "<?php opcache_reset(); echo 'opcache reset' . PHP_EOL; ?>" > ~/$domain/public/opcachereset.php
 curl https://$domain/opcachereset.php
 rm ~/$domain/public/opcachereset.php
+
+# Inform client to update via websockets (optional)
+# php ~/$domain/artisan check:updates
 
 # clean-up before exit
 rm "$LOCK_FILE"
