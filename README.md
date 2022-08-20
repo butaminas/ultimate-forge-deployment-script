@@ -14,7 +14,7 @@ In case you have a public directory for uploads, e.g. I have one in `/public/upl
 
 In my case, I don't use S3 so I have `~/domain_name_uploads` and it is linked in `~/project_root/public/uploads`
 
-_Note: we copy the project root directory update it and then replace it with the old one, therefore, the downtime is like 1sec. but we need to move any uploads or other static files directory outside of project root or use S3 File Storage so we wouldn't loose any files that might have been uploaded while the deployment script was processing in a copy directory._
+_Note: we copy the project root directory, update it and then replace it with the old one, therefore, the downtime is like 1sec. but we need to move any uploads or other static files directory outside of project root or use S3 File Storage so we wouldn't loose any files that might have been uploaded while the deployment script was processing in a copy directory._
 
 ### The Script
 
@@ -54,13 +54,13 @@ cd ~/deploy_"$domain"
 git stash --include-untracked
 git pull origin release/testing
 git stash clear
-composer install --no-interaction --prefer-dist --optimize-autoloader
+$FORGE_COMPOSER install --no-interaction --prefer-dist --optimize-autoloader
 yarn install
 yarn prod
 if [ -f artisan ]; then
-   php artisan migrate --force
-   php artisan cache:clear
-   php artisan view:clear
+   $FORGE_PHP artisan migrate --force
+   $FORGE_PHP artisan cache:clear
+   $FORGE_PHP artisan view:clear
 fi
 
 # Switch (downtime for microseconds)
@@ -76,15 +76,18 @@ ln -nfs ../../"$domain"_uploads ./uploads
 rm -rf ./**/*.map
 
 # Restart PHP services
-sudo -S service php7.4-fpm reload
+sudo -S service $FORGE_PHP_FPM reload
 
 # Reset opcache
 echo "<?php opcache_reset(); echo 'opcache reset' . PHP_EOL; ?>" > ~/$domain/public/opcachereset.php
 curl https://$domain/opcachereset.php
 rm ~/$domain/public/opcachereset.php
 
+# Reload queue listener 
+$FORGE_PHP ~/$domain/artisan queue:restart
+
 # Inform client to update via websockets (optional)
-# php ~/$domain/artisan check:updates
+# $FORGE_PHP ~/$domain/artisan check:updates
 
 # clean-up before exit
 rm "$LOCK_FILE"
